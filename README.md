@@ -11,8 +11,6 @@ To optimize memory access patterns, we utilized a **transposed array format** (S
 * **Format:** Data is stored as $x_0, x_1, x_2, ..., y_0, y_1, y_2, ...$ rather than an Array of Structures ($x_0, y_0, x_1, y_1...$).
 * **Coalescing:** This layout applies to both input instances and centroids. Storing data by dimension allows threads in a warp to access consecutive memory addresses, ensuring fully coalesced memory transactions.
 
-![Memory Layout and Coalescing Diagram](assets/memory_layout.png)
-
 ## Implementation Details
 
 ### 1. Centroid Initialization (`kernel_InitializeCentroids`)
@@ -46,7 +44,14 @@ This kernel calculates the final mean position for the new centroids.
 
 ## Performance Results
 The implementation was benchmarked on a GeForce 2080 Ti. The metrics are measured in Mega-points per second.
+![Graph GeForce 2080 Ti](assets/nvidia.png)
 
 We observed the following performance behaviors for datasets of $10^4$, $10^5$, and $10^6$ points:
+for $10^4$ points :
+![Benchmark with 10e4 points](assets/perf_E4.png)
 
-![Benchmark Graph GeForce 2080 Ti](assets/benchmark_results.png)
+for $10^5$ points :
+![Benchmark with 10e5 points](assets/perf_E5.png)
+
+for $10^6$ points :
+![Benchmark with 10e6 points](assets/perf_E6.png)
