@@ -1,6 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
 // k-means on CPU & GPU
-// S. Vialle March 2022 (with the help of G. He)
 ////////////////////////////////////////////////////////////////////////////////
 
 // #define DATA_FILE_NAME  "DATA_S1.txt"
@@ -13,8 +12,8 @@
 // #define NB_DIMS         2
 // #define NB_CLUSTERS     15
 
-#define DATA_FILE_NAME  "DATA_S1_1E4.txt"
-#define NB_INSTANCES    10000
+#define DATA_FILE_NAME  "DATA_S1_1E6.txt"
+#define NB_INSTANCES    1000000
 #define NB_DIMS         2
 #define NB_CLUSTERS     4
 

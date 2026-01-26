@@ -149,11 +149,6 @@ __global__ void kernel_InitializeCentroids(curandState *state,
     int idx = floor(NB_INSTANCES * CURAND_UNIFORM(&localState));
     
     // Set the centroid coordinates with the selected input data coordinates 
-    //for (int j = 0; j < NB_DIMS; j++)                                   // TO DO
-    //  GPU_centroid[...] = GPU_instance[...]
-    //  or GPU_centroid_T[...] = GPU_instance_T[...]
-    //  or GPU_centroid[...] = GPU_instance_T[...]
-    //  or GPU_centroid_T[...] = GPU_instance[...]
     for (int j = 0; j < NB_DIMS; j++) {
       GPU_centroid_T[centroidIdx + NB_CLUSTERS * j] = GPU_instance_T[idx + NB_INSTANCES * j];
     }
@@ -176,24 +171,26 @@ __global__ void kernel_ComputeAssign(T_real *GPU_centroid_T,
     int d = offset / NB_CLUSTERS;
     s_centroids[offset] = GPU_centroid_T[d * NB_CLUSTERS + k];
   }
-
-  __syncthreads();
-    
+  __syncthreads(); 
   if (idx < NB_INSTANCES) {
         int old_label = GPU_label[idx];
         float min_dist = FLT_MAX;
         int best_cluster = 0;
-
+        T_real x = GPU_instance_T[idx];
+        T_real y = GPU_instance_T[idx + NB_INSTANCES];
 
         for (int k = 0; k < NB_CLUSTERS; k++) {
             float current_dist = 0;
 
             for (int d = 0; d < NB_DIMS; d++) {
-                T_real x = GPU_instance_T[idx + d * NB_INSTANCES];
                 T_real c = s_centroids[k + d * NB_CLUSTERS];
-                
-                T_real diff = x - c;
-                current_dist += diff * diff;
+                if (d == 0) {
+                    T_real diff = x - c;
+                    current_dist += diff * diff;
+                } else {
+                    T_real diff = y - c;
+                    current_dist += diff * diff;
+                }
             }
 
             if (current_dist < min_dist) {
@@ -231,9 +228,7 @@ __global__ void kernel_UpdateCentroid_Step1(int *GPU_label,
     for (int i = threadIdx.x; i < NB_CLUSTERS * NB_DIMS; i += blockDim.x) {
         s_centroids[i] = 0.0;
     }
-
     __syncthreads();
-
 // on remplit les valeurs de la shared (count d'instance par cluster et somme des coordonnées)
     if (idx < NB_INSTANCES) {
         int cluster_id = GPU_label[idx];
@@ -245,9 +240,7 @@ __global__ void kernel_UpdateCentroid_Step1(int *GPU_label,
             atomicAdd(&s_centroids[d * NB_CLUSTERS + cluster_id], val);
         }
     }
-
     __syncthreads();
-
 // on met à jour les valeurs globales à partir des valeurs de la shared
     for (int k = threadIdx.x; k < NB_CLUSTERS; k += blockDim.x) {
         if (s_count[k] > 0) {
@@ -269,7 +262,7 @@ __global__ void kernel_UpdateCentroid_Step1(int *GPU_label,
 __global__ void kernel_UpdateCentroid_Step2(T_real *GPU_centroid_T,
                                             int *GPU_count)
 {
- // TO DO (il faut mtn faire la moyenne de chaque valeur dans le buffer pour chaque cluster et trouver les nouvelles coordonnées du centroide)
+ // (il faut mtn faire la moyenne de chaque valeur dans le buffer pour chaque cluster et trouver les nouvelles coordonnées du centroide)
  int idx = threadIdx.x + blockIdx.x * blockDim.x;
 
  if (idx < NB_CLUSTERS) {
@@ -281,12 +274,7 @@ __global__ void kernel_UpdateCentroid_Step2(T_real *GPU_centroid_T,
     }
   }
  }
- // Note:
- //   The "atomic add" on global GPU var could be useful:
- //     atomicAdd(Adr_of_GPU_var, Integer_Value_to_Add);
- //   Warning: time consumming function
 }
-
 
 /*-------------------------------------------------------------------------------*/
 /* Complete clustering on GPU, with loop control on CPU                          */
