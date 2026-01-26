@@ -92,7 +92,7 @@ void gpu_Finalize()
 /*-------------------------------------------------------------------------------*/
 void gpu_SetDataOnGPU()
 {
-  CHECK_CUDA_SUCCESS(cudaMemcpy(GPU_instance_T, instance, 
+  CHECK_CUDA_SUCCESS(cudaMemcpy(GPU_instance_T, instance_T, 
                                 sizeof(T_real)*NB_DIMS*NB_INSTANCES, 
                                 cudaMemcpyHostToDevice),
                      "Transfer instance...");
@@ -293,15 +293,15 @@ void gpu_Kmeans()
   // Note: IF NEEDED you can transpose a 2D array using CUBLAS_GEAM() function
   // Ex: Transpose GPU_centroid_T to GPU_centroid
   //
-  T_real alpha = 1.0f;
-  T_real beta = 0.0f;
-  CHECK_CUBLAS_SUCCESS(CUBLAS_GEAM(cublasHandle,
-                                  CUBLAS_OP_T, CUBLAS_OP_N,
-                                  NB_DIMS, NB_CLUSTERS,
-                                  &alpha, GPU_centroid_T, NB_CLUSTERS,
-                                  &beta, NULL, NB_DIMS,
-                                  GPU_centroid, NB_DIMS), 
-                      "Use CUBLAS_GEAM to transpose GPU_centroid_T");
+  // T_real alpha = 1.0f;
+  // T_real beta = 0.0f;
+  // CHECK_CUBLAS_SUCCESS(CUBLAS_GEAM(cublasHandle,
+  //                                 CUBLAS_OP_T, CUBLAS_OP_N,
+  //                                 NB_DIMS, NB_CLUSTERS,
+  //                                 &alpha, GPU_centroid_T, NB_CLUSTERS,
+  //                                 &beta, NULL, NB_DIMS,
+  //                                 GPU_centroid, NB_DIMS), 
+  //                     "Use CUBLAS_GEAM to transpose GPU_centroid_T");
 
   // Clustering iterative loop --------------------------------------------
   do {
@@ -365,6 +365,7 @@ void gpu_Kmeans()
     nb_iter_kmeans++;
     
   } while (tolerance > TOL_KMEANS && nb_iter_kmeans < MAX_ITER_KMEANS);
+
 
   // To measure correct time in main.cc
   //cudaDeviceSynchronize();   // not necessary if you call CudaCheckError() 

@@ -3,15 +3,15 @@
 // S. Vialle March 2022 (with the help of G. He)
 ////////////////////////////////////////////////////////////////////////////////
 
-// #define DATA_FILE_NAME  "DATA_S1.txt"
-// #define NB_INSTANCES    1000
-// #define NB_DIMS         2
-// #define NB_CLUSTERS     4
-
-#define DATA_FILE_NAME  "DATA_S2.txt"
-#define NB_INSTANCES    5000
+#define DATA_FILE_NAME  "DATA_S1.txt"
+#define NB_INSTANCES    1000
 #define NB_DIMS         2
-#define NB_CLUSTERS     15
+#define NB_CLUSTERS     4
+
+// #define DATA_FILE_NAME  "DATA_S2.txt"
+// #define NB_INSTANCES    5000
+// #define NB_DIMS         2
+// #define NB_CLUSTERS     15
 
 
 #define OUTPUT_LABELS          "Labels_"
