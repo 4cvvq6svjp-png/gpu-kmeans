@@ -218,20 +218,48 @@ __global__ void kernel_UpdateCentroid_Step1(int *GPU_label,
                                             T_real *GPU_centroid_T,
                                             int *GPU_count)
 {
- // TO DO
- int idx = threadIdx.x + blockIdx.x * blockDim.x;
- if (idx < NB_INSTANCES) {
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
 
-    // on compte le nombre de point par cluster
-    // atomic add permet de creer une file d'attente pour incrementer le compteur GPU_count. 
-    //ça permet de ne pas saturer l'écriture
-    int cluster_id = GPU_label[idx];
-    atomicAdd(&GPU_count[cluster_id], 1);
-    for (int d = 0; d < NB_DIMS; d++) {
-      // on somme dans un buffer les coordonnées X et Y de chaque instance du cluster.
-      atomicAdd(&GPU_centroid_T[cluster_id + d *NB_CLUSTERS], GPU_instance_T[idx + d * NB_INSTANCES]);
+    __shared__ int s_count[NB_CLUSTERS]; 
+    __shared__ T_real s_centroids[NB_CLUSTERS * NB_DIMS];
+
+// on initialise les valeurs de la shared à 0
+    for (int i = threadIdx.x; i < NB_CLUSTERS; i += blockDim.x) {
+        s_count[i] = 0;
     }
- }
+    
+    for (int i = threadIdx.x; i < NB_CLUSTERS * NB_DIMS; i += blockDim.x) {
+        s_centroids[i] = 0.0;
+    }
+
+    __syncthreads();
+
+// on remplit les valeurs de la shared (count d'instance par cluster et somme des coordonnées)
+    if (idx < NB_INSTANCES) {
+        int cluster_id = GPU_label[idx];
+        
+        atomicAdd(&s_count[cluster_id], 1);
+        
+        for (int d = 0; d < NB_DIMS; d++) {
+            T_real val = GPU_instance_T[d * NB_INSTANCES + idx]; 
+            atomicAdd(&s_centroids[d * NB_CLUSTERS + cluster_id], val);
+        }
+    }
+
+    __syncthreads();
+
+// on met à jour les valeurs globales à partir des valeurs de la shared
+    for (int k = threadIdx.x; k < NB_CLUSTERS; k += blockDim.x) {
+        if (s_count[k] > 0) {
+            atomicAdd(&GPU_count[k], s_count[k]);
+        }
+    }
+
+    for (int offset = threadIdx.x; offset < NB_CLUSTERS * NB_DIMS; offset += blockDim.x) {
+        if (abs(s_centroids[offset]) > 1e-9) { 
+             atomicAdd(&GPU_centroid_T[offset], s_centroids[offset]);
+        }
+    }
 }
 
 
