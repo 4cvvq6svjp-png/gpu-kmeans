@@ -8,10 +8,15 @@
 // #define NB_DIMS         2
 // #define NB_CLUSTERS     4
 
-#define DATA_FILE_NAME  "DATA_S2.txt"
-#define NB_INSTANCES    5000
+// #define DATA_FILE_NAME  "DATA_S2.txt"
+// #define NB_INSTANCES    5000
+// #define NB_DIMS         2
+// #define NB_CLUSTERS     15
+
+#define DATA_FILE_NAME  "DATA_S1_E6.txt"
+#define NB_INSTANCES    1000000
 #define NB_DIMS         2
-#define NB_CLUSTERS     15
+#define NB_CLUSTERS     4
 
 
 #define OUTPUT_LABELS          "Labels_"
